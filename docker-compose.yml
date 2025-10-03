@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:2.11
+    container_name: traefik
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.le.acme.email=benjamin.buelow@walkingcows.de
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    restart: unless-stopped
+
+  hugo:
+    image: klakegg/hugo:ext-alpine
+    container_name: hugo-builder
+    working_dir: /src  
+    volumes:
+      - ./walkingcows.de:/src
+    command: server --bind 0.0.0.0 --baseURL https://walkingcows.de
+    ports:
+      - "1313:1313"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_static
+    volumes:
+      - ./hugo-site/public:/usr/share/nginx/html:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.hugo.rule=Host(`walkingcows.de`)
+      - traefik.http.routers.hugo.entrypoints=websecure
+      - traefik.http.routers.hugo.tls.certresolver=le
+      # HTTP -> HTTPS Redirect
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.hugo-redirect.rule=Host(`walkingcows.de`)
+      - traefik.http.routers.hugo-redirect.entrypoints=web
+      - traefik.http.routers.hugo-redirect.middlewares=redirect-to-https
+    restart: unless-stopped
