@@ -1,4 +1,15 @@
+# 1. Verzeichnis anlegen und Rechte setzen
+sudo mkdir /opt/walkingcows.de
+sudo chown -R $(whoami):$(whoami) /opt/walkingcows.de
+
+# 2. Ins Zielverzeichnis wechseln
 cd /opt
-git clone https://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@github.com/bkluszynski/walkingcows.de.git
+
+# 3. Repo klonen (ohne Token in der URL!)
+git clone https://github.com/bkluszynski/walkingcows.de.git
+
+# 4. Ins Projektverzeichnis wechseln
 cd walkingcows.de
+
+# 5. Container starten
 docker compose up -d
