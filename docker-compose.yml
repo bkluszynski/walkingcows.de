@@ -21,29 +21,18 @@ services:
       - ./letsencrypt:/letsencrypt
     restart: unless-stopped
 
-  hugo:
-    image: klakegg/hugo:ext-alpine
-    container_name: hugo-builder
-    working_dir: /src  
-    volumes:
-      - ./walkingcows.de:/src
-      - ./hugo-site:/target
-    command: --destination /target
-    restart: "no"
-
   nginx:
     image: nginx:alpine
     container_name: nginx_static
     volumes:
-      - ./hugo-site/public:/usr/share/nginx/html:ro
+      - ./static:/usr/share/nginx/html:ro
     labels:
       - traefik.enable=true
-      - traefik.http.routers.hugo.rule=Host(`walkingcows.de`)
-      - traefik.http.routers.hugo.entrypoints=websecure
-      - traefik.http.routers.hugo.tls.certresolver=le
-      # HTTP -> HTTPS Redirect
+      - traefik.http.routers.nginx.rule=Host(`walkingcows.de`)
+      - traefik.http.routers.nginx.entrypoints=websecure
+      - traefik.http.routers.nginx.tls.certresolver=le
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.routers.hugo-redirect.rule=Host(`walkingcows.de`)
-      - traefik.http.routers.hugo-redirect.entrypoints=web
-      - traefik.http.routers.hugo-redirect.middlewares=redirect-to-https
+      - traefik.http.routers.nginx-redirect.rule=Host(`walkingcows.de`)
+      - traefik.http.routers.nginx-redirect.entrypoints=web
+      - traefik.http.routers.nginx-redirect.middlewares=redirect-to-https
     restart: unless-stopped
