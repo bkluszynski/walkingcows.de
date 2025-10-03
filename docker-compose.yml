@@ -27,10 +27,9 @@ services:
     working_dir: /src  
     volumes:
       - ./walkingcows.de:/src
-    command: server --bind 0.0.0.0 --baseURL https://walkingcows.de
-    ports:
-      - "1313:1313"
-    restart: unless-stopped
+      - ./hugo-site:/target
+    command: --destination /target
+    restart: "no"
 
   nginx:
     image: nginx:alpine
