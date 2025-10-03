@@ -25,7 +25,7 @@ services:
     image: nginx:alpine
     container_name: nginx_static
     volumes:
-      - ./static:/usr/share/nginx/html:ro
+      - ./site:/usr/share/nginx/html:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.nginx.rule=Host(`walkingcows.de`)
